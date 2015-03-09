@@ -1,5 +1,5 @@
 <?
-namespace rming;
+namespace vendors\rming;
 
 class test{
 

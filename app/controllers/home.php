@@ -1,6 +1,6 @@
 <?
-namespace app\controller;
-use app\controller;
+namespace app\controllers;
+use app\controllers;
 
 class home {
     public function __construct(){

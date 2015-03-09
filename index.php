@@ -120,6 +120,7 @@ function router($method = 'POST/GET',$pattern = null,callable $handler = null){
  */
 function process($router)
 {
+    global $instance;
     extract($router);
     $uri_params = uri_param();
     //directory
@@ -198,7 +199,22 @@ router('GET','^\/wellcome$',function(){
 
 run();
 
-
+/**
+ * $instance
+ * $routers
+ *
+ *
+ * router()
+ * uri_param_assoc()
+ * uri_param()
+ *
+ * @todo
+ *
+ * load_view()
+ * $e->getCode() => router -> load_view();
+ *
+ *
+ */
 
 
 
