@@ -221,10 +221,12 @@ trait load{
 $app = core::get_instance();
 
 $app->router('*','^\/404$',function(){
+    header("HTTP/1.1 404 Not Found");
     load::view('404.tpl',['title'=>'Oops...']);
 });
 
 $app->router('*','^\/405$',function(){
+    header("HTTP/1.1 405 Method Not Allowed");
     echo "405 Page Not Found";
 });
 
