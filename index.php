@@ -15,11 +15,21 @@ define('APP_PATH'  , BASE_PATH.'app'.DIRECTORY_SEPARATOR);
 define('DEFAULT_CONTROLLER' ,'home');
 define('DEFAULT_METHOD'     ,'index');
 define('PHP_EXT'            ,'.php');
-
+define('REWRITE_EXT'        ,'.html');
 /**
  * exception_handler
  */
 set_exception_handler(function(Exception $e){
+    $code = $e->getCode();
+    switch ($code) {
+        case 404:
+            header("Location: /404");
+            break;
+
+        default:
+            # code...
+            break;
+    }
     exit($e->getMessage());
 });
 
@@ -62,7 +72,7 @@ function uri_param($n = false)
     if($request_uri===false) {
         throw new Exception("Error Processing REQUEST_URI");
     }
-
+    $request_uri = mb_substr($request_uri, 0,mb_stripos($request_uri,REWRITE_EXT,0,'utf-8')?:strlen($request_uri),'utf-8');
     if(!preg_match('/\/[0-9a-z_~\:\.\-\/]*/i',$request_uri,$matches)) {
         throw new Exception("Error Processing REQUEST_URI");
     } else {
@@ -106,7 +116,7 @@ function uri_param_assoc($start = 1){
 function router($method = 'POST/GET',$pattern = null,callable $handler = null){
     global $routers;
     $routers[] = [
-        'method'   => $method,
+        'method'  => $method,
         'pattern' => $pattern,
         'handler' => $handler,
     ];
@@ -120,12 +130,11 @@ function router($method = 'POST/GET',$pattern = null,callable $handler = null){
  */
 function process($router)
 {
-    global $instance;
     extract($router);
     $uri_params = uri_param();
     //directory
     $directory_name       = array_shift($uri_params);
-    $directory_controller = APP_PATH.'controller'.DIRECTORY_SEPARATOR;
+    $directory_controller = APP_PATH.'controllers'.DIRECTORY_SEPARATOR;
     $directory_real       = $directory_controller.$directory_name.DIRECTORY_SEPARATOR;
 
     if(!is_dir($directory_real)) {
@@ -149,14 +158,18 @@ function process($router)
     //实例化controller
     $class_name = array_shift($uri_params);
     if(!file_exists($directory_real.$class_name.PHP_EXT)) {
-        throw new Exception("Error Processing Controller");
+        throw new Exception("Error Processing Controller",404);
     }
     $class_real = str_replace(DIRECTORY_SEPARATOR,'\\', str_replace(BASE_PATH, '', $directory_real.$class_name));
     $instance = new $class_real();
     //执行method
     $method_name = array_shift($uri_params);
     if($pattern === null) {
-        $instance->$method_name();
+        if(is_callable([$instance,$method_name])){
+            $instance->$method_name();
+        } else {
+            throw new Exception("Error Processing Controller",404);
+        }
     } else {
         call_user_func_array($handler,uri_param_assoc());
     }
@@ -170,7 +183,6 @@ function run()
     if($request_method === false) {
         throw new Exception("Error Processing REQUEST_METHOD");
     }
-
     $routers = array_filter($routers,function($router) use ($request_method){
         $select = true;
         $select = $select && in_array( strtoupper($request_method) , explode('/',strtoupper($router['method'])) );
@@ -189,6 +201,16 @@ function run()
 
 router('GET/POST');
 
+/**
+ * 404页面
+ */
+router('GET','^\/404$',function(){
+    echo "404";
+});
+
+/**
+ * 首页
+ */
 router('GET','^\/$',function(){
     echo "halo world!";
 });
@@ -200,7 +222,6 @@ router('GET','^\/wellcome$',function(){
 run();
 
 /**
- * $instance
  * $routers
  *
  *
