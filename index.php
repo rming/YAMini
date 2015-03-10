@@ -95,7 +95,7 @@ class core{
 
         $routers = array_filter($routers,function($router) use ($request_method){
             $select = in_array( strtoupper($request_method) , explode('/',strtoupper($router['method'])) ) || ($router['method'] == '*');
-            $select = $select && preg_match('/'.$router['pattern'].'/i', '/'.implode('/', uri::uri_param()) );
+            $select = $select && preg_match('/'.$router['pattern'].'/i', '/'.implode('/', uri::param()) );
             return $select;
         });
 
@@ -114,7 +114,7 @@ class core{
     private function process($router){
         extract($router);
 
-        $uri_params = uri::uri_param();
+        $uri_params = uri::param();
 
         $directory_name       = array_shift($uri_params);
         $directory_controller = APP_PATH.'controllers'.DIRECTORY_SEPARATOR;
@@ -154,7 +154,7 @@ class core{
                 throw new Exception("Page Not Found",404);
             }
         } else {
-            call_user_func_array($handler,uri_param_assoc());
+            call_user_func_array($handler,uri::param_assoc());
         }
     }
 
@@ -162,7 +162,7 @@ class core{
 }
 
 trait uri{
-    public static function uri_param($n = false){
+    public static function param($n = false){
         $request_uri = isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:false;
         if($request_uri===false) {
             throw new Exception("Error Processing REQUEST_URI");
@@ -185,8 +185,8 @@ trait uri{
         }
     }
 
-    public static function uri_param_assoc($start = 1){
-        $uri_params = self::uri_param();
+    public static function param_assoc($start = 3){
+        $uri_params = self::param();
         if($start > count($uri_params) || !$uri_params) {
             $uri_params_assoc = [];
         } else {
@@ -203,11 +203,25 @@ trait uri{
     }
 }
 
+trait load{
+    public static function view($file = null,$data = [],$return = false){
+        $view_path = APP_PATH.'views'.DIRECTORY_SEPARATOR.$file;
+        is_array($data)?extract($data):null;
+        ob_start();
+        include($view_path);
+        if($return) {
+            $buffer = ob_get_contents();
+            @ob_end_clean();
+            return $buffer;
+        }
+        ob_end_flush();
+    }
+}
 
 $app = core::get_instance();
 
 $app->router('*','^\/404$',function(){
-    echo "404 Page Not Found";
+    load::view('404.tpl',['title'=>'Oops...']);
 });
 
 $app->router('*','^\/405$',function(){
@@ -219,24 +233,25 @@ $app->router('GET','^\/$',function(){
     echo "halo world!";
 });
 
-$app->router('GET','^\/wellcome$',function(){
-    echo "wellcome!";
+$app->router('GET','^\/hello$',function(){
+    echo "halo world!";
+});
+
+
+$app->router('GET','^\/welcome$',function(){
+    echo "welcome!";
 });
 
 $app->run();
 
 
 /**
- * $routers
+ * $app->router($method = 'GET/POST/HEAD',$pattern = null,callable $handler = null)
  *
+ * uri::param_assoc($start = 3)
+ * uri::param($n = false)
  *
- * router()
- * uri_param_assoc()
- * uri_param()
- *
- * @todo
- *
- * load_view()
+ * load::view($file = null,$data = [],$return = false)
  *
  *
  */

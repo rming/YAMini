@@ -1,11 +1,10 @@
 ####yuesao.science
-几个函数实现的MVC分离？
-URI ROUTER ?
+随便写写 MVC
 
 @todo
 
-- load_view()
 - site_url()
+- basic controller
 - default args value
 - register object list
 - load_model() ORM
