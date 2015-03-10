@@ -25,12 +25,12 @@ set_exception_handler(function(Exception $e){
         case 404:
             header("Location: /404");
             break;
-
+        case 405;
+            header("Location: /405");
         default:
-            # code...
+            exit($e->getMessage());
             break;
     }
-    exit($e->getMessage());
 });
 
 /**
@@ -113,13 +113,14 @@ function uri_param_assoc($start = 1){
  *router
  *
  */
-function router($method = 'POST/GET',$pattern = null,callable $handler = null){
+function router($method = 'GET/POST/HEAD',$pattern = null,callable $handler = null){
     global $routers;
     $routers[] = [
         'method'  => $method,
         'pattern' => $pattern,
         'handler' => $handler,
     ];
+    return $routers;
 }
 
 /**
@@ -131,8 +132,9 @@ function router($method = 'POST/GET',$pattern = null,callable $handler = null){
 function process($router)
 {
     extract($router);
+
     $uri_params = uri_param();
-    //directory
+
     $directory_name       = array_shift($uri_params);
     $directory_controller = APP_PATH.'controllers'.DIRECTORY_SEPARATOR;
     $directory_real       = $directory_controller.$directory_name.DIRECTORY_SEPARATOR;
@@ -142,7 +144,7 @@ function process($router)
         $directory_name = null;
         $directory_real = $directory_controller;
     }
-    //补全默认controller
+
     switch (count($uri_params)) {
         case 0:
             array_push($uri_params,DEFAULT_CONTROLLER,DEFAULT_METHOD);
@@ -155,20 +157,20 @@ function process($router)
             $uri_params         = array_shift($uri_params_chunked);
             break;
     }
-    //实例化controller
+
     $class_name = array_shift($uri_params);
     if(!file_exists($directory_real.$class_name.PHP_EXT)) {
-        throw new Exception("Error Processing Controller",404);
+        throw new Exception("Page Not Found",404);
     }
     $class_real = str_replace(DIRECTORY_SEPARATOR,'\\', str_replace(BASE_PATH, '', $directory_real.$class_name));
     $instance = new $class_real();
-    //执行method
+
     $method_name = array_shift($uri_params);
     if($pattern === null) {
         if(is_callable([$instance,$method_name])){
             $instance->$method_name();
         } else {
-            throw new Exception("Error Processing Controller",404);
+            throw new Exception("Page Not Found",404);
         }
     } else {
         call_user_func_array($handler,uri_param_assoc());
@@ -180,9 +182,9 @@ function run()
     global $routers;
 
     $request_method = isset($_SERVER['REQUEST_METHOD'])?$_SERVER['REQUEST_METHOD']:false;
-    if($request_method === false) {
-        throw new Exception("Error Processing REQUEST_METHOD");
-    }
+
+    if($request_method === false) throw new Exception("Error Processing REQUEST_METHOD");
+
     $routers = array_filter($routers,function($router) use ($request_method){
         $select = true;
         $select = $select && in_array( strtoupper($request_method) , explode('/',strtoupper($router['method'])) );
@@ -191,6 +193,9 @@ function run()
     });
 
     $router = array_pop($routers);
+
+    if(!$router) throw new Exception("Method Not Allowed", 405);
+
     if(is_callable($router['handler'])) {
         call_user_func($router['handler']);
     } else {
@@ -199,18 +204,16 @@ function run()
 
 }
 
-router('GET/POST');
+router('GET/POST/HEAD');
 
-/**
- * 404页面
- */
-router('GET','^\/404$',function(){
-    echo "404";
+router('PUT/DELETE/TRACE/CONNECT/OPTIONS/PATCH/COPY/LINK/UNLINK/PURGE',null,function(){
+    echo "405 Method Not Allowed";
 });
 
-/**
- * 首页
- */
+router('GET','^\/404$',function(){
+    echo "404 Page Not Found";
+});
+
 router('GET','^\/$',function(){
     echo "halo world!";
 });
@@ -232,7 +235,6 @@ run();
  * @todo
  *
  * load_view()
- * $e->getCode() => router -> load_view();
  *
  *
  */
