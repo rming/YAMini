@@ -6,6 +6,7 @@ URI ROUTER ?
 
 - load_view()
 - site_url()
+- default args value
 - register object list
 - load_model() ORM
 - composer vendors
