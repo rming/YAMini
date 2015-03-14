@@ -162,21 +162,6 @@ class core
                 throw new Exception("Page Not Found", 404);
             }
 
-            /*
-            if ($pattern === null) {
-                if (is_callable([$controller, $method_name])){
-                    $controller->$method_name();
-                } else {
-                    throw new Exception("Page Not Found", 404);
-                }
-            } else {
-                if (is_callable($handler)) {
-                    call_user_func_array($handler, uri::param_assoc());
-                } else {
-                    throw new Exception("Error Processing Closure");
-                }
-            }
-            */
         } else {
             $processor = $router['handler'];
         }
