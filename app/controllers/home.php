@@ -3,13 +3,14 @@ namespace controllers;
 
 class home
 {
+    use \uri;
     public function __construct()
     {
     }
 
-    public function index()
+    public function index($name,$age)
     {
-        echo "home::index()";
+        echo "I am $name , $age";
     }
 
 }

@@ -1,5 +1,5 @@
-####yuesao.science
-随便写写 MVC
+####yaSlim
+Yet another mini PHP framework.
 
 ####Notice：
 
@@ -7,9 +7,9 @@
 
 @todo
 
-- site_url()
+- site url
+- load model
 - basic controller
 - default args value
 - register object list
-- load_model() ORM
-- composer vendors
+- ORM

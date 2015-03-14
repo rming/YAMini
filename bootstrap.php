@@ -25,7 +25,7 @@ set_exception_handler(['coreException', 'handler']);
 
 trait coreException
 {
-    public function handler(Exception $e)
+    public static function handler(Exception $e)
     {
         $code = $e->getCode();
         switch ($code) {
@@ -82,7 +82,7 @@ class core
 
         $routers = array_filter($routers, function($router) use ($request_method){
             $select = in_array( strtoupper($request_method) , explode('/',strtoupper($router['method'])) ) || ($router['method'] == '*');
-            $select = $select && preg_match('/'.$router['pattern'].'/i', '/'.implode('/', uri::param()) );
+            $select = $select && preg_match('/'.$router['pattern'].'/i', '/'.implode('/', uri::params()) );
             return $select;
         });
 
@@ -103,7 +103,7 @@ class core
             if (is_string($handler)) {
                 $uri_params = array_filter(explode('/', $handler));
             } else {
-                $uri_params = uri::param();
+                $uri_params = uri::params();
             }
 
             $directory_name       = array_shift($uri_params);
@@ -147,7 +147,7 @@ class core
             $processor = $router['handler'];
         }
 
-        call_user_func_array($processor,uri::param_assoc());
+        call_user_func_array($processor,uri::params(2));
     }
 
     public function __destruct()
@@ -164,7 +164,7 @@ class core
 
 trait uri
 {
-    public static function param($n = false)
+    public static function params($start = -1)
     {
         $request_uri = isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:false;
         if ($request_uri===false) {
@@ -174,36 +174,35 @@ trait uri
         if (!preg_match('/\/[0-9a-z_~\:\.\-\/]*/i', $request_uri, $matches)) {
             throw new Exception("Error Processing REQUEST_URI");
         } else {
-            $uri_params = array_filter(explode('/', trim(array_shift($matches), '/')));
-            if (is_numeric($n)) {
-                $n = $n-1;
-                if (isset($uri_params[$n])) {
-                    return $uri_params[$n];
-                } else {
-                    return false;
-                }
-            } else {
-                return $uri_params;
-            }
+            $params = array_filter(explode('/', trim(array_shift($matches), '/')));
+            return array_slice($params,$start-1);
         }
     }
 
-    public static function param_assoc($start = 3)
+    public static function segment($n = 1)
     {
-        $uri_params = self::param();
-        if ($start > count($uri_params) || !$uri_params) {
-            $uri_params_assoc = [];
+        $params = self::params();
+        $n = is_numeric($n) ? $n-1 : 0;
+
+        return isset($params[$n]) ? $params[$n] : false;
+    }
+
+    public static function params_assoc($start = 3)
+    {
+        $params = self::params();
+        if ($start > count($params) || !$params) {
+            $params_assoc = [];
         } else {
-            $uri_params_origin = $uri_params;
-            array_shift($uri_params);
-            $uri_params_assoc = [];
-            array_map(function($k, $v) use (&$uri_params_assoc){$uri_params_assoc[$k]=$v;}, $uri_params_origin, $uri_params);
-            $assoc_index      = array_flip(range($start-1,  2*count($uri_params_origin), 2));
-            $assoc_keys       = array_intersect_key(array_keys($uri_params_assoc), $assoc_index);
-            $uri_params_assoc = array_intersect_key($uri_params_assoc, array_flip($assoc_keys));
+            $params_origin = $params;
+            array_shift($params);
+            $params_assoc = [];
+            array_map(function($k, $v) use (&$params_assoc){$params_assoc[$k]=$v;}, $params_origin, $params);
+            $assoc_index      = array_flip(range($start-1,  2*count($params_origin), 2));
+            $assoc_keys       = array_intersect_key(array_keys($params_assoc), $assoc_index);
+            $params_assoc = array_intersect_key($params_assoc, array_flip($assoc_keys));
         }
 
-        return $uri_params_assoc;
+        return $params_assoc;
     }
 }
 
@@ -226,49 +225,5 @@ trait load
 
 $app = core::get_instance();
 
-$app->router('*','^\/404$', function(){
-    header("HTTP/1.1 404 Not Found");
-    load::view('404.tpl', ['title'=>'Oops...']);
-});
-
-$app->router('*','^\/405$', function(){
-    header("HTTP/1.1 405 Method Not Allowed");
-    echo "405 Page Not Found";
-});
-
-
-$app->router('GET','^\/$', function(){
-    echo "hello world!";
-});
-
-$app->router('GET','^\/halo$', function(){
-    echo "halo word!";
-});
-
-$app->router('GET','^\/welcome$', function(){
-    echo "welcome {time()}!";
-});
-
-$app->router('GET','^\/rmingwang$', '/home');
-
-/*
-$app->router('GET','^\/(.*)$', function(){
-    echo "site cloesed!";
-});
-*/
-
-
-/**
- * $app->router($method = 'GET/POST/HEAD',$pattern = null, $handler = null)
- * $handler = String/Closure
- * uri::param_assoc($start = 3)
- * uri::param($n = false)
- *
- * load::view($file = null,$data = [],$return = false)
- *
- *
- */
-
-
-
+require("router.php");
 
