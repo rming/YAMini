@@ -1,4 +1,4 @@
-####yaSlim
+####YAMini
 Yet another mini PHP framework.
 
 ####Notice：

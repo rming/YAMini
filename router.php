@@ -19,7 +19,6 @@ $app->router('GET','^\/halo$', function(){
 });
 
 
-
 $app->router('GET','^\/welcome', function($ss,$name){
     printf("welcome %s! \n%s",$name,date('Y-m-d H:i:s'));
 });

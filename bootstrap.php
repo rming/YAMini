@@ -45,7 +45,7 @@ trait coreException
 
 class core
 {
-    use uri;
+    use \uri;
     private static $instance = null;
     private static $routers  = [];
     private function __construct()
@@ -101,41 +101,42 @@ class core
 
         if (!is_callable($handler)) {
             if (is_string($handler)) {
-                $uri_params = array_filter(explode('/', $handler));
+                $params = array_filter(explode('/', $handler));
             } else {
-                $uri_params = uri::params();
+                $params = uri::params();
             }
 
-            $directory_name       = array_shift($uri_params);
-            $directory_real       = CONTROLLER_PATH.$directory_name.DIRECTORY_SEPARATOR;
+            $directory_name = array_shift($params);
+            $directory_real = CONTROLLER_PATH.$directory_name.DIRECTORY_SEPARATOR;
 
             if (!is_dir($directory_real)) {
-                array_unshift($uri_params, $directory_name);
+                array_unshift($params, $directory_name);
                 $directory_name = null;
                 $directory_real = CONTROLLER_PATH;
             }
 
-            switch (count($uri_params)) {
+            switch (count($params)) {
                 case 0:
-                    array_push($uri_params, DEFAULT_CONTROLLER,DEFAULT_METHOD);
+                    array_push($params, DEFAULT_CONTROLLER,DEFAULT_METHOD);
                     break;
                 case 1:
-                    array_push($uri_params, DEFAULT_METHOD);
+                    array_push($params, DEFAULT_METHOD);
                     break;
                 default:
-                    $uri_params_chunked = array_chunk($uri_params, 2, false);
-                    $uri_params         = array_shift($uri_params_chunked);
+                    $params_chunked = array_chunk($params, 2, false);
+                    $params         = array_shift($params_chunked);
                     break;
             }
 
-            $class_name = array_shift($uri_params);
+            $class_name = array_shift($params);
             if (!file_exists($directory_real.$class_name.PHP_EXT)) {
                 throw new Exception("Page Not Found", 404);
+
             }
 
             $class_real  = str_replace(DIRECTORY_SEPARATOR, '\\', str_replace(APP_PATH, '', $directory_real.$class_name));
             $controller  = new $class_real();
-            $method_name = array_shift($uri_params);
+            $method_name = array_shift($params);
 
             if (is_callable([$controller, $method_name])){
                 $processor = [$controller, $method_name];
@@ -147,7 +148,7 @@ class core
             $processor = $router['handler'];
         }
 
-        call_user_func_array($processor,uri::params(2));
+        call_user_func_array($processor,uri::params());
     }
 
     public function __destruct()
@@ -164,12 +165,18 @@ class core
 
 trait uri
 {
-    public static function params($start = -1)
+    public static function request_uri()
     {
         $request_uri = isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:false;
         if ($request_uri===false) {
             throw new Exception("Error Processing REQUEST_URI");
+        } else {
+            return $request_uri;
         }
+    }
+    public static function params($start = 1)
+    {
+        $request_uri = self::request_uri();
         $request_uri = mb_substr($request_uri, 0, mb_stripos($request_uri, REWRITE_EXT, 0, 'utf-8')?:strlen($request_uri), 'utf-8');
         if (!preg_match('/\/[0-9a-z_~\:\.\-\/]*/i', $request_uri, $matches)) {
             throw new Exception("Error Processing REQUEST_URI");
@@ -197,8 +204,8 @@ trait uri
             array_shift($params);
             $params_assoc = [];
             array_map(function($k, $v) use (&$params_assoc){$params_assoc[$k]=$v;}, $params_origin, $params);
-            $assoc_index      = array_flip(range($start-1,  2*count($params_origin), 2));
-            $assoc_keys       = array_intersect_key(array_keys($params_assoc), $assoc_index);
+            $assoc_index  = array_flip(range($start-1,  2*count($params_origin), 2));
+            $assoc_keys   = array_intersect_key(array_keys($params_assoc), $assoc_index);
             $params_assoc = array_intersect_key($params_assoc, array_flip($assoc_keys));
         }
 
