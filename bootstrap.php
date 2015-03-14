@@ -27,20 +27,24 @@ trait coreException
 {
     public static function handler(Exception $e)
     {
-        $code = $e->getCode();
-        switch ($code) {
-            case 404:
-                header("Location: /404");
-                break;
-            case 405;
-                header("Location: /405");
-                break;
-            default:
-                exit($e->getMessage());
-                break;
-        }
+        $data = [
+            'code'    => $e->getCode(),
+            'message' => $e->getMessage(),
+            'title'   => 'Oops...',
+        ];
+        header("HTTP/1.1 {$data['code']} {$data['message']}");
+        self::show_error($data);
     }
 
+    public static function show_error($data)
+    {
+        $error_tpl      = "error/error.php";
+        $error_code_tpl = sprintf("error/%d.php",$data['code']);
+        if(file_exists(VIEW_PATH.$error_code_tpl)) {
+            $error_tpl = $error_code_tpl;
+        }
+        load::view($error_tpl,$data);
+    }
 }
 
 class core
@@ -125,6 +129,7 @@ class core
                 default:
                     $params_chunked = array_chunk($params, 2, false);
                     $params         = array_shift($params_chunked);
+
                     break;
             }
 
@@ -148,7 +153,14 @@ class core
             $processor = $router['handler'];
         }
 
-        call_user_func_array($processor,uri::params());
+        $args = uri::params(3);
+        if(preg_match('/'.$router['pattern'].'/i', uri::request_uri(), $matches )) {
+            if(count($matches) >= 2) {
+                $request_uri_end = array_pop($matches);
+                $args = array_filter(explode('/', $request_uri_end));
+            }
+        }
+        call_user_func_array($processor,$args);
     }
 
     public function __destruct()
