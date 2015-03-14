@@ -56,26 +56,33 @@ switch (ENVIRONMENT) {
  * autolader
  */
 spl_autoload_register(function($class_name){
-    require(BASE_PATH.str_replace('\\','/',$class_name).PHP_EXT);
+    $class_file = BASE_PATH.str_replace('\\','/',$class_name).PHP_EXT;
+    if(file_exists($class_file)) {
+        require(BASE_PATH.str_replace('\\','/',$class_name).PHP_EXT);
+    }
 });
 
-class core{
+class core
+{
     use uri;
     private static $instance = null;
     private static $routers  = [];
-    private function __construct(){
+    private function __construct()
+    {
         self::router('GET/POST/HEAD');
         self::router('PUT/DELETE/TRACE/CONNECT/OPTIONS/PATCH/COPY/LINK/UNLINK/PURGE',null,function(){
             throw new Exception("Method Not Allowed", 405);
         });
     }
-    public static function get_instance(){
+    public static function get_instance()
+    {
         if (self::$instance === null) {
             return self::$instance = new self;
         }
     }
 
-    public function router($method = 'GET/POST/HEAD', $pattern = null, callable $handler = null){
+    public function router($method = 'GET/POST/HEAD', $pattern = null, $handler = null)
+    {
         self::$routers[] = [
             'method'  => $method,
             'pattern' => $pattern,
@@ -84,7 +91,8 @@ class core{
         return self::$routers;
     }
 
-    public function run(){
+    public function run()
+    {
         $routers = self::$routers;
 
         $request_method = isset($_SERVER['REQUEST_METHOD'])?$_SERVER['REQUEST_METHOD']:false;
@@ -101,66 +109,89 @@ class core{
 
         if (!$router) throw new Exception("Method Not Allowed", 405);
 
-        if (is_callable($router['handler'])) {
-            call_user_func($router['handler']);
-        } else {
-            self::process($router);
-        }
+        self::process($router);
 
     }
 
-    private function process($router){
+
+    private function process($router)
+    {
         extract($router);
 
-        $uri_params = uri::param();
+        if (!is_callable($handler)) {
+            if (is_string($handler)) {
+                $uri_params = array_filter(explode('/', $handler));
+            } else {
+                $uri_params = uri::param();
+            }
 
-        $directory_name       = array_shift($uri_params);
-        $directory_controller = APP_PATH.'controllers'.DIRECTORY_SEPARATOR;
-        $directory_real       = $directory_controller.$directory_name.DIRECTORY_SEPARATOR;
+            $directory_name       = array_shift($uri_params);
+            $directory_controller = APP_PATH.'controllers'.DIRECTORY_SEPARATOR;
+            $directory_real       = $directory_controller.$directory_name.DIRECTORY_SEPARATOR;
 
-        if (!is_dir($directory_real)) {
-            array_unshift($uri_params, $directory_name);
-            $directory_name = null;
-            $directory_real = $directory_controller;
-        }
+            if (!is_dir($directory_real)) {
+                array_unshift($uri_params, $directory_name);
+                $directory_name = null;
+                $directory_real = $directory_controller;
+            }
 
-        switch (count($uri_params)) {
-            case 0:
-                array_push($uri_params, DEFAULT_CONTROLLER,DEFAULT_METHOD);
-                break;
-            case 1:
-                array_push($uri_params, DEFAULT_METHOD);
-                break;
-            default:
-                $uri_params_chunked = array_chunk($uri_params, 2, false);
-                $uri_params         = array_shift($uri_params_chunked);
-                break;
-        }
+            switch (count($uri_params)) {
+                case 0:
+                    array_push($uri_params, DEFAULT_CONTROLLER,DEFAULT_METHOD);
+                    break;
+                case 1:
+                    array_push($uri_params, DEFAULT_METHOD);
+                    break;
+                default:
+                    $uri_params_chunked = array_chunk($uri_params, 2, false);
+                    $uri_params         = array_shift($uri_params_chunked);
+                    break;
+            }
 
-        $class_name = array_shift($uri_params);
-        if (!file_exists($directory_real.$class_name.PHP_EXT)) {
-            throw new Exception("Page Not Found", 404);
-        }
-        $class_real = str_replace(DIRECTORY_SEPARATOR, '\\', str_replace(BASE_PATH, '', $directory_real.$class_name));
-        $controller = new $class_real();
+            $class_name = array_shift($uri_params);
+            if (!file_exists($directory_real.$class_name.PHP_EXT)) {
+                throw new Exception("Page Not Found", 404);
+            }
+            $class_real  = str_replace(DIRECTORY_SEPARATOR, '\\', str_replace(BASE_PATH, '', $directory_real.$class_name));
+            $controller  = new $class_real();
+            $method_name = array_shift($uri_params);
 
-        $method_name = array_shift($uri_params);
-        if ($pattern === null) {
             if (is_callable([$controller, $method_name])){
-                $controller->$method_name();
+                $processor = [$controller, $method_name];
             } else {
                 throw new Exception("Page Not Found", 404);
             }
+
+            /*
+            if ($pattern === null) {
+                if (is_callable([$controller, $method_name])){
+                    $controller->$method_name();
+                } else {
+                    throw new Exception("Page Not Found", 404);
+                }
+            } else {
+                if (is_callable($handler)) {
+                    call_user_func_array($handler, uri::param_assoc());
+                } else {
+                    throw new Exception("Error Processing Closure");
+                }
+            }
+            */
         } else {
-            call_user_func_array($handler, uri::param_assoc());
+            $processor = $router['handler'];
         }
+
+        call_user_func_array($processor,uri::param_assoc());
+
     }
 
 
 }
 
-trait uri{
-    public static function param($n = false){
+trait uri
+{
+    public static function param($n = false)
+    {
         $request_uri = isset($_SERVER['REQUEST_URI'])?$_SERVER['REQUEST_URI']:false;
         if ($request_uri===false) {
             throw new Exception("Error Processing REQUEST_URI");
@@ -183,7 +214,8 @@ trait uri{
         }
     }
 
-    public static function param_assoc($start = 3){
+    public static function param_assoc($start = 3)
+    {
         $uri_params = self::param();
         if ($start > count($uri_params) || !$uri_params) {
             $uri_params_assoc = [];
@@ -201,8 +233,10 @@ trait uri{
     }
 }
 
-trait load{
-    public static function view($file = null, $data = [], $return = false){
+trait load
+{
+    public static function view($file = null, $data = [], $return = false)
+    {
         $view_path = APP_PATH.'views'.DIRECTORY_SEPARATOR.$file;
         is_array($data)?extract($data):null;
         ob_start();
@@ -220,7 +254,7 @@ $app = core::get_instance();
 
 $app->router('*','^\/404$', function(){
     header("HTTP/1.1 404 Not Found");
-    load::view('404.tpl',['title'=>'Oops...']);
+    load::view('404.tpl', ['title'=>'Oops...']);
 });
 
 $app->router('*','^\/405$', function(){
@@ -242,12 +276,20 @@ $app->router('GET','^\/welcome$', function(){
     echo "welcome!";
 });
 
+$app->router('GET','^\/rmingwang$', '/home');
+
+/*
+$app->router('GET','^\/(.*)$', function(){
+    echo "site cloesed!";
+});
+*/
+
 $app->run();
 
 
 /**
- * $app->router($method = 'GET/POST/HEAD',$pattern = null,callable $handler = null)
- *
+ * $app->router($method = 'GET/POST/HEAD',$pattern = null, $handler = null)
+ * $handler = String/Closure
  * uri::param_assoc($start = 3)
  * uri::param($n = false)
  *
