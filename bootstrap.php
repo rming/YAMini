@@ -8,14 +8,18 @@ define('ENVIRONMENT',"development");
 /**
  * BASE_PATH & APP_PATH
  */
-define('BASE_PATH',  dirname(__FILE__).DIRECTORY_SEPARATOR);
+define('BASE_PATH',         __DIR__.DIRECTORY_SEPARATOR);
 
-define('APP_PATH',   BASE_PATH.'app'.DIRECTORY_SEPARATOR);
+define('APP_PATH',          BASE_PATH.'app'.DIRECTORY_SEPARATOR);
+define('CONTROLLER_PATH',   APP_PATH.'controllers'.DIRECTORY_SEPARATOR);
+define('VIEW_PATH',         APP_PATH.'views'.DIRECTORY_SEPARATOR);
 
 define('DEFAULT_CONTROLLER', 'home');
 define('DEFAULT_METHOD',     'index');
 define('PHP_EXT',            '.php');
 define('REWRITE_EXT',        '.html');
+
+require BASE_PATH.'/vendor/autoload.php';
 
 /**
  * exception_handler
@@ -52,15 +56,6 @@ switch (ENVIRONMENT) {
         break;
 }
 
-/**
- * autolader
- */
-spl_autoload_register(function($class_name){
-    $class_file = BASE_PATH.str_replace('\\','/',$class_name).PHP_EXT;
-    if(file_exists($class_file)) {
-        require(BASE_PATH.str_replace('\\','/',$class_name).PHP_EXT);
-    }
-});
 
 class core
 {
@@ -126,13 +121,12 @@ class core
             }
 
             $directory_name       = array_shift($uri_params);
-            $directory_controller = APP_PATH.'controllers'.DIRECTORY_SEPARATOR;
-            $directory_real       = $directory_controller.$directory_name.DIRECTORY_SEPARATOR;
+            $directory_real       = APP_PATH.$directory_name.DIRECTORY_SEPARATOR;
 
             if (!is_dir($directory_real)) {
                 array_unshift($uri_params, $directory_name);
                 $directory_name = null;
-                $directory_real = $directory_controller;
+                $directory_real = CONTROLLER_PATH;
             }
 
             switch (count($uri_params)) {
@@ -152,7 +146,8 @@ class core
             if (!file_exists($directory_real.$class_name.PHP_EXT)) {
                 throw new Exception("Page Not Found", 404);
             }
-            $class_real  = str_replace(DIRECTORY_SEPARATOR, '\\', str_replace(BASE_PATH, '', $directory_real.$class_name));
+
+            $class_real  = str_replace(DIRECTORY_SEPARATOR, '\\', str_replace(APP_PATH, '', $directory_real.$class_name));
             $controller  = new $class_real();
             $method_name = array_shift($uri_params);
 
@@ -167,7 +162,11 @@ class core
         }
 
         call_user_func_array($processor,uri::param_assoc());
+    }
 
+    public function __destruct()
+    {
+        self::run();
     }
 
 
@@ -222,7 +221,7 @@ trait load
 {
     public static function view($file = null, $data = [], $return = false)
     {
-        $view_path = APP_PATH.'views'.DIRECTORY_SEPARATOR.$file;
+        $view_path = VIEW_PATH.DIRECTORY_SEPARATOR.$file;
         is_array($data)?extract($data):null;
         ob_start();
         include($view_path);
@@ -268,8 +267,6 @@ $app->router('GET','^\/(.*)$', function(){
     echo "site cloesed!";
 });
 */
-
-$app->run();
 
 
 /**

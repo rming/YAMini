@@ -1,6 +1,5 @@
 <?
-namespace app\controllers;
-use app\controllers;
+namespace controllers;
 
 class home
 {

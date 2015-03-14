@@ -1,4 +1,12 @@
 {
     "require":{
+    },
+    "autoload": {
+        "psr-4": {
+            "Vendor\\Namespace\\": ""
+        },
+        "classmap": [
+            "app/"
+        ]
     }
 }
