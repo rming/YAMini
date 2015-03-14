@@ -1,61 +1,47 @@
 <?
-/**
- * ENVIRONMENT
- * production / development
- */
+
+//production / development
 define('ENVIRONMENT',"development");
 
-/**
- * BASE_PATH & APP_PATH
- */
+ //useful path
 define('BASE_PATH',         __DIR__.DIRECTORY_SEPARATOR);
 
 define('APP_PATH',          BASE_PATH.'app'.DIRECTORY_SEPARATOR);
 define('CONTROLLER_PATH',   APP_PATH.'controllers'.DIRECTORY_SEPARATOR);
+define('MODEL_PATH',        APP_PATH.'models'.DIRECTORY_SEPARATOR);
 define('VIEW_PATH',         APP_PATH.'views'.DIRECTORY_SEPARATOR);
 
+//uri config
 define('DEFAULT_CONTROLLER', 'home');
 define('DEFAULT_METHOD',     'index');
 define('PHP_EXT',            '.php');
 define('REWRITE_EXT',        '.html');
 
+//Composer autoloader
 require BASE_PATH.'/vendor/autoload.php';
 
-/**
- * exception_handler
- */
-set_exception_handler(function(Exception $e){
-    $code = $e->getCode();
-    switch ($code) {
-        case 404:
-            header("Location: /404");
-            break;
-        case 405;
-            header("Location: /405");
-            break;
-        default:
-            exit($e->getMessage());
-            break;
+//Exception handler
+set_exception_handler(['coreException', 'handler']);
+
+trait coreException
+{
+    public function handler(Exception $e)
+    {
+        $code = $e->getCode();
+        switch ($code) {
+            case 404:
+                header("Location: /404");
+                break;
+            case 405;
+                header("Location: /405");
+                break;
+            default:
+                exit($e->getMessage());
+                break;
+        }
     }
-});
 
-/**
- * whether dispay errors base on ENVIRONMENT
- */
-switch (ENVIRONMENT) {
-    case 'production':
-        ini_set("display_errors", "off");
-        error_reporting(0);
-        break;
-    case 'development':
-        ini_set("display_errors", "On");
-        error_reporting(E_ALL);
-        break;
-    default:
-        throw new Exception("Error Processing ENVIRONMENT");
-        break;
 }
-
 
 class core
 {
@@ -121,7 +107,7 @@ class core
             }
 
             $directory_name       = array_shift($uri_params);
-            $directory_real       = APP_PATH.$directory_name.DIRECTORY_SEPARATOR;
+            $directory_real       = CONTROLLER_PATH.$directory_name.DIRECTORY_SEPARATOR;
 
             if (!is_dir($directory_real)) {
                 array_unshift($uri_params, $directory_name);
@@ -166,7 +152,11 @@ class core
 
     public function __destruct()
     {
-        self::run();
+        try {
+            self::run();
+        } catch (Exception $e) {
+            coreException::handler($e);
+        }
     }
 
 
@@ -248,16 +238,15 @@ $app->router('*','^\/405$', function(){
 
 
 $app->router('GET','^\/$', function(){
-    echo "halo world!";
+    echo "hello world!";
 });
 
-$app->router('GET','^\/hello$', function(){
-    echo "halo world!";
+$app->router('GET','^\/halo$', function(){
+    echo "halo word!";
 });
-
 
 $app->router('GET','^\/welcome$', function(){
-    echo "welcome!";
+    echo "welcome {time()}!";
 });
 
 $app->router('GET','^\/rmingwang$', '/home');
