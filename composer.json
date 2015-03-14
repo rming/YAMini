@@ -3,10 +3,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Vendor\\Namespace\\": ""
+            "Vendor\\Namespace\\" : "",
+            "YAMini\\"      : "core/",
+            "controllers\\" :"app/controllers/",
+            "models\\"      :"app/models/"
         },
         "classmap": [
-            "app/"
         ]
     }
 }

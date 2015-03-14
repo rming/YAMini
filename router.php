@@ -1,15 +1,6 @@
 <?
-$app->router('*','^\/404$', function(){
-    header("HTTP/1.1 404 Not Found");
-    load::view('404.php', ['title'=>'Oops...']);
-});
 
-$app->router('*','^\/405$', function(){
-    header("HTTP/1.1 405 Method Not Allowed");
-    echo "405 Page Not Found";
-});
-
-
+/*
 $app->router('GET','^\/$', function(){
     echo "hello world!";
 });
@@ -26,7 +17,7 @@ $app->router('GET','^\/welcome\/(\d+)$', function($ss,$name){
 $app->router('GET','^\/who(.*)$', '/home');
 
 $app->router('GET','^\/home(.*)$', '/home/index');
-
+*/
 
 
 /*
