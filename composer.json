@@ -6,7 +6,8 @@
             "Vendor\\Namespace\\" : "",
             "YAMini\\"      : "core/",
             "controllers\\" :"app/controllers/",
-            "models\\"      :"app/models/"
+            "models\\"      :"app/models/",
+            "libs\\"        :"app/libs/"
         },
         "classmap": [
         ]
