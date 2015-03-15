@@ -14,8 +14,12 @@ class Home extends controller
             'tpl_name' => 'tpl_home_index',
         ];
 
-
-        self::load_view('tpl_layout',$data);
+        $views = [
+            'tpl_header',
+            'tpl_home_index',
+            'tpl_footer',
+        ];
+        $this->load_view($views,$data);
         /*
 
         $this->load_view('tpl_header',$data);
@@ -31,7 +35,9 @@ class Home extends controller
         var_dump($me::$models);
         */
     }
-    public function hello(){
+
+    public function hello()
+    {
         echo "hello";
     }
 

@@ -32,3 +32,4 @@ function get_instance()
 {
     return \YAMini\core::get_controller_instance();
 }
+

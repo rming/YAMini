@@ -57,9 +57,18 @@ Yet another mini PHP framework.
                     'tpl_name' => 'tpl_home_index',
                 ];
 
-                $this->load_view('tpl_header'     ,$data);
-                $this->load_view('tpl_home_index' ,$data);
-                $this->load_view('tpl_footer'     ,$data);
+                $views = [
+                    'tpl_header',
+                    'tpl_home_index',
+                    'tpl_footer',
+                ];
+                $this->load_view($views,$data);
+                /*
+                 * 另外一种繁琐的写法
+                 * $this->load_view('tpl_header'     ,$data);
+                 * $this->load_view('tpl_home_index' ,$data);
+                 * $this->load_view('tpl_footer'     ,$data);
+                */
             }
         }
 
