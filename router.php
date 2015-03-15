@@ -27,19 +27,3 @@ $app->router('GET','^\/(.*)$', function(){
 */
 
 
-/**
- *
- * $app->router($method = 'GET/POST/HEAD',$pattern = null, $handler = null)
- * $handler = String/Closure
- * 地址重写前 ，args 默认从第三段 uri 开始，重写后，从匹配项后 开始
- *
- * coreException::show_error($data);
- *
- * uri::params_assoc($start = 3)
- * uri::params($n = false)
- * uri::segment($start = 1)
- *
- * loader::load_view($file = null,$data = [],$return = false)
- *
- *
- */
