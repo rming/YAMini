@@ -7,14 +7,23 @@ class Home extends controller
 
     public function index()
     {
+        $that = get_instance();
+
         $data = [
-            'header'   => ['title' => 'YAMini::Home'],
+            'title'    => 'YAMini::Home',
             'tpl_name' => 'tpl_home_index',
         ];
-        self::view('tpl_layout',$data);
+
+
+        self::load_view('tpl_layout',$data);
         /*
-        $me = get_instance();
+
+        $this->load_view('tpl_header',$data);
+        $this->load_view('tpl_home_index',$data);
+        $this->load_view('tpl_footer',$data);
+
         //$params = self::params();
+        /*
         $res = $this->load_model();
         var_dump($res);
         var_dump(self::$models);

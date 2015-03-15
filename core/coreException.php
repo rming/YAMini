@@ -20,6 +20,6 @@ trait coreException
         if(file_exists(VIEW_PATH.$error_code_tpl)) {
             $error_tpl = $error_code_tpl;
         }
-        load::view($error_tpl,$data);
+        loader::load_view($error_tpl,$data);
     }
 }

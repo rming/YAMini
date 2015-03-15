@@ -26,7 +26,7 @@ set_exception_handler(['YAMini\\coreException', 'handler']);
 
 $app = YAMini\core::get_instance();
 
-require("router.php");
+require "router.php";
 
 function get_instance()
 {

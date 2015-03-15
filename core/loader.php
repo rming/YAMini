@@ -1,17 +1,19 @@
 <?
 namespace YAMini;
-trait load
+trait loader
 {
     protected static $models = [];
-    public static function view($file = null, $data = [], $return = false)
+    public static function load_view($file = null, $data = [], $return = false)
     {
+        $that      = get_instance();
         $view_path = VIEW_PATH.DIRECTORY_SEPARATOR.$file;
         is_array($data)?extract($data):null;
+
         ob_start();
         if (file_exists($view_path.VIEW_EXT)) {
-            include($view_path.VIEW_EXT);
+            include $view_path.VIEW_EXT;
         } elseif (file_exists($view_path)) {
-            include($view_path);
+            include $view_path;
         } else {
             throw new Exception("Error Processing View :$view_path");
         }

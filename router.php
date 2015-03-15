@@ -39,7 +39,7 @@ $app->router('GET','^\/(.*)$', function(){
  * uri::params($n = false)
  * uri::segment($start = 1)
  *
- * load::view($file = null,$data = [],$return = false)
+ * loader::load_view($file = null,$data = [],$return = false)
  *
  *
  */

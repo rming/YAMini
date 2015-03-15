@@ -2,7 +2,7 @@
 namespace YAMini;
 class Controller
 {
-    use uri, load;
+    use uri, loader;
     protected static $instance = null;
     private function __construct()
     {
