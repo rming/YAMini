@@ -10,7 +10,7 @@ class core
     {
         self::router('GET/POST/HEAD');
         self::router('PUT/DELETE/TRACE/CONNECT/OPTIONS/PATCH/COPY/LINK/UNLINK/PURGE',null,function(){
-            throw new \Exception("Method Not Allowed", 405);
+            throw new \Exception("Method Not Allowed", 500);
         });
     }
 
@@ -39,7 +39,7 @@ class core
 
         $request_method = isset($_SERVER['REQUEST_METHOD'])?$_SERVER['REQUEST_METHOD']:false;
 
-        if ($request_method === false) throw new \Exception("Error Processing REQUEST_METHOD");
+        if ($request_method === false) throw new \Exception("Error Processing REQUEST_METHOD", 500);
 
         $routers = array_filter($routers, function($router) use ($request_method){
             $select = in_array( strtoupper($request_method) , explode('/',strtoupper($router['method'])) ) || ($router['method'] == '*');
@@ -49,7 +49,7 @@ class core
 
         $router = array_pop($routers);
 
-        if (!$router) throw new \Exception("Method Not Allowed", 405);
+        if (!$router) throw new \Exception("Method Not Allowed", 500);
 
         self::process($router);
 
