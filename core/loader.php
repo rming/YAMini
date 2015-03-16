@@ -15,7 +15,7 @@ trait loader
             if (file_exists($_file)) {
                include $_file;
             } else {
-                throw new \Exception(sprintf("Error Processing View :%s",str_replace(BASE_PATH, '', $_file)),404);
+                throw new \Exception(sprintf("View Not Found [ %s ]",str_replace(BASE_PATH, '', $_file)),500);
             }
         }
 
@@ -59,39 +59,36 @@ trait loader
             return false;
         }
 
-        if (count($_files) > 1) {
-            $model_instances = [];
-            foreach ($_files as $k => $_file) {
-                if (in_array($k, static::$_classes)) {
-                    break;
-                } else {
-                    $model_instance = self::factory(static::$_classes, $_file, $k);
-                    $model_instances[$k] = $model_instance;
-                }
+        $is_single = count($_files) === 1;
+
+        $model_instances = [];
+        foreach ($_files as $key => $_file) {
+            $model_key  = $is_single && is_string($_alias) && $_alias ? $_alias : $key ;
+            $class_name = str_replace([APP_PATH,'/'],['','\\'],rtrim($_file, PHP_EXT));
+
+            if (!class_exists($class_name)) {
+                throw new \Exception(sprintf("Class Not Found [ %s ]", $class_name), 500);
             }
-            return $model_instances;
-        } else {
-            $key   = key($_files);
-            $_file = current($_files);
-            $model_key = is_string($_alias) ? $_alias : $key ;
-            if (in_array($model_key,static::$_classes)) {
-                return static::$_classes[$model_key];
+
+            if (in_array($model_key, static::$_classes)) {
+                continue;
             } else {
-                $model_instance = self::factory(static::$_classes, $_file, $model_key);
-                return $model_instance;
+                $model_instance = self::factory(static::$_classes, $class_name, $model_key);
+                $model_instances[$model_key] = $model_instance;
             }
         }
+
+        return count($model_instances) === 1 ? current($model_instances) : $model_instances;
     }
     /**
      * class 实例化工厂类
      * @param  static::$property $register       私有属性，类的注册表
-     * @param  String            $_file          经过 self::files_path 处理过的完整真实地址
+     * @param  String            $class_name     类名
      * @param  String            $key            注册名
      * @return Object|flase      $class_instance 实例化对象
      */
-    private static function factory(&$register = null, $_file = null, $key = null)
+    private static function factory(&$register = null, $class_name = null, $key = null)
     {
-        $class_name = str_replace([APP_PATH,'/'],['','\\'],rtrim($_file, PHP_EXT));
         $class_instance = new $class_name;
         if ($class_instance) {
             $register[$key] = $class_instance;
