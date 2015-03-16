@@ -59,26 +59,26 @@ http://yourdomain.com/home/halo
      * @param string|null           $pattern 正则表达式
      * @param callable|null|string  $handler callback function or URI Rewrite
      */
-    $app->router($method = 'GET/POST/HEAD',$pattern = null, $handler = null)
+    $_app->router($method = 'GET/POST/HEAD',$pattern = null, $handler = null)
 
     //根目录
-    $app->router('GET/POST','^\/$', function(){
+    $_app->router('GET/POST','^\/$', function(){
         echo "Home Page!";
     });
 
     //匹配所有路径
-    $app->router('*','^\/(.*)$', function(){
+    $_app->router('*','^\/(.*)$', function(){
         echo "Site Cloesed!";
     });
 
     //REWRITE /home/数字 到 /home/index/数字
-    $app->router('GET','^\/home\/(\d+)$', '/home/index');
+    $_app->router('GET','^\/home\/(\d+)$', '/home/index');
 
     //匹配 /homework  /home* 的
-    $app->router('GET','^\/who(.*)$', '/home');
+    $_app->router('GET','^\/who(.*)$', '/home');
 
     //默认参数，控制器中同理
-    $app->router('GET','^\/home\/welcome\/(.*)$', function($name){
+    $_app->router('GET','^\/home\/welcome\/(.*)$', function($name){
         printf("welcome %s! \n%s",$name,date('Y-m-d H:i:s'));
     });
 

@@ -7,6 +7,7 @@ define('ENVIRONMENT',"development");
 define('BASE_PATH',         __DIR__.DIRECTORY_SEPARATOR);
 
 define('APP_PATH',          BASE_PATH.'app'.DIRECTORY_SEPARATOR);
+define('CONFIG_PATH',       APP_PATH.'config'.DIRECTORY_SEPARATOR);
 define('CONTROLLER_PATH',   APP_PATH.'controllers'.DIRECTORY_SEPARATOR);
 define('MODEL_PATH',        APP_PATH.'models'.DIRECTORY_SEPARATOR);
 define('LIB_PATH',          APP_PATH.'libs'.DIRECTORY_SEPARATOR);
@@ -25,9 +26,9 @@ require BASE_PATH.'/vendor/autoload.php';
 //Exception handler
 set_exception_handler(['YAMini\\coreException', 'handler']);
 
-$app = YAMini\core::get_instance();
+$_app = YAMini\core::get_instance();
 
-require "router.php";
+require CONFIG_PATH."router.php";
 
 function get_instance()
 {
