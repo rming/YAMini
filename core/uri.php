@@ -48,4 +48,11 @@ trait uri
 
         return $params_assoc;
     }
+    public static function url($uri = '')
+    {
+        $protocol = $_SERVER['HTTPS'] ==='off' ? 'http://' : 'https://';
+        $url = rtrim($_SERVER['HTTP_HOST'].DIRECTORY_SEPARATOR.$uri,REWRITE_EXT).REWRITE_EXT;
+
+        return $protocol.preg_replace('/(\/)+/i', '/', $url);
+    }
 }
