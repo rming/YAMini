@@ -42,7 +42,7 @@ http://yourdomain.com/home/halo
 
 
 ####路由配置
-文件：`router.php`
+文件：`app/config/router.php`
 如果没有任何配置，路由默认会按照`URI`请求`controller::method()`，默认`controller`和默认`method`在`bootstrap`中进行配置。
 
 示例:
@@ -213,7 +213,6 @@ http://yourdomain.com/home/halo
 
 
 ##TODO
-- app class autoloader(auto new)
-- 文档 `loader::config()` `DB class`
+- 文档 `loader::config()`, ORM 文档
+- loader::load() 实例化 composer 类的测试，文档
 - trait url
-- ORM

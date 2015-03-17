@@ -84,8 +84,14 @@ trait loader
 
         return self::load($_classes, $_alias);
     }
-
-    public static function load($_classes = null, $_alias = null, $_config = null)
+    /**
+     * 类加载工具
+     * @param  array                 $_classes     完整类名 数组
+     * @param  String                $_alias       类实例化后的别名 （仅对 $_classes 数量为一 时有效）
+     * @param  String|Array          $_config      类实例化参数    （仅对 $_classes 数量为一 时有效）
+     * @return Object|Object Array   $class_instances  实例化后对象（数组）
+     */
+    public static function load($_classes, $_alias = null, $_config = null)
     {
 
         $is_single = count($_classes) === 1;
