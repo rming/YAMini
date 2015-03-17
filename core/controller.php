@@ -16,6 +16,7 @@ class Controller
         }
     }
 
+
     public static function get_instance()
     {
         if (static::$instance === null) {

@@ -213,5 +213,7 @@ http://yourdomain.com/home/halo
 
 
 ##TODO
+- app class autoloader(auto new)
+- 文档 `loader::config()` `DB class`
 - trait url
 - ORM

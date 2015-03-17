@@ -2,7 +2,34 @@
 namespace YAMini;
 trait loader
 {
-    protected static $_classes   = [];
+    protected static $_classes = [];
+
+    public static function config($_config = null)
+    {
+        $config_file = CONFIG_PATH.$_config.PHP_EXT;
+        if(!file_exists($config_file)) {
+            throw new \Exception(sprintf("Config Not Found [ %s ]",$_config.PHP_EXT), 500);
+        } else {
+            return (require CONFIG_PATH.$_config.PHP_EXT);
+        }
+    }
+
+    public static function load_db($_config = null, $_alias = null)
+    {
+        if(!$_config) {
+            $_config = DB_DEFAULT_GROUP;
+        }
+
+        if (!is_string($_config)) {
+            throw new \Exception("Database config Error", 500);
+        }
+
+        $db_config = self::config(DB_CONFIG_FILE);
+        $db_config = current(array_intersect_key($db_config,[$_config=>null]));
+        $_classes  = [$_config=>'YAMini\DB'];
+
+        return self::load($_classes, $_alias, $db_config);
+    }
 
     public static function load_view($_files = null, $_data = [], $_return = false)
     {
@@ -40,58 +67,66 @@ trait loader
 
     public static function load_model($_files = null, $_alias = null)
     {
-        return self::load($_files, $_alias, MODEL_PATH);
+        $_files = self::files_path($_files, MODEL_PATH, PHP_EXT);
+        $_classes = array_map(function($_file){
+            return str_replace([APP_PATH,'/'],['','\\'],rtrim($_file, PHP_EXT));
+        }, $_files);
+        return self::load($_classes, $_alias);
     }
 
     public static function load_lib($_files = null, $_alias = null)
     {
-        return self::load($_files, $_alias, LIB_PATH);
+
+        $_files   = self::files_path($_files, LIB_PATH, PHP_EXT);
+        $_classes = array_map(function($_file){
+            return str_replace([APP_PATH,'/'],['','\\'],rtrim($_file, PHP_EXT));
+        }, $_files);
+
+        return self::load($_classes, $_alias);
     }
 
-    public static function load($_files = null, $_alias = null, $_prefix = null)
+    public static function load($_classes = null, $_alias = null, $_config = null)
     {
-        if (!$_prefix) {
-            $_prefix = LIB_PATH;
-        }
 
-        $_files = self::files_path($_files, $_prefix, PHP_EXT);
-        if (!$_files) {
-            return false;
-        }
+        $is_single = count($_classes) === 1;
 
-        $is_single = count($_files) === 1;
-
-        $model_instances = [];
-        foreach ($_files as $key => $_file) {
-            $model_key  = $is_single && is_string($_alias) && $_alias ? $_alias : $key ;
-            $class_name = str_replace([APP_PATH,'/'],['','\\'],rtrim($_file, PHP_EXT));
-
-            if (!class_exists($class_name)) {
-                throw new \Exception(sprintf("Class Not Found [ %s ]", $class_name), 500);
+        $class_instances = [];
+        foreach ($_classes as $key => $_class) {
+            $_config       = $is_single && $_config ? $_config : null;
+            $instance_name = $is_single && is_string($_alias) && $_alias ? $_alias : $key ;
+            if (!class_exists($_class)) {
+                throw new \Exception(sprintf("Class Not Found [ %s ]", $_class), 500);
             }
 
-            if (in_array($model_key, static::$_classes)) {
-                continue;
+            if (in_array($instance_name, static::$_classes)) {
+                $class_instance = static::$_classes[$instance_name];
             } else {
-                $model_instance = self::factory(static::$_classes, $class_name, $model_key);
-                $model_instances[$model_key] = $model_instance;
+                $class_instance = self::factory(static::$_classes, $_class, $instance_name, $_config);
             }
+            $class_instances[$instance_name] = $class_instance;
         }
-
-        return count($model_instances) === 1 ? current($model_instances) : $model_instances;
+        return count($class_instances) === 1 ? current($class_instances) : $class_instances;
     }
+
     /**
      * class 实例化工厂类
      * @param  static::$property $register       私有属性，类的注册表
-     * @param  String            $class_name     类名
-     * @param  String            $key            注册名
+     * @param  String            $class          类名
+     * @param  String            $instance_name  注册名
+     * @param  Array             $config         实例化配置参数数组
+     *
      * @return Object|flase      $class_instance 实例化对象
      */
-    private static function factory(&$register = null, $class_name = null, $key = null)
+    private static function factory(&$register = null, $class = null, $instance_name = null, $config = [])
     {
-        $class_instance = new $class_name;
+        if($config) {
+            $class_instance = new $class($config);
+        } else {
+            $class_instance = new $class;
+        }
+
         if ($class_instance) {
-            $register[$key] = $class_instance;
+            $register[$instance_name] = $class_instance;
         }
         return $class_instance;
     }

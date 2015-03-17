@@ -1,6 +1,6 @@
 <?
 namespace models;
-class Home_model{
+class Home_model {
 
     public function halo()
     {

@@ -57,7 +57,37 @@ class Home extends controller
 
     public function hello()
     {
-        echo "hello";
+        $db = $this->load_db('default');
+        $this->load_model('user_model');
+        $users = $this->user_model->all();
+        foreach ($users as $user) {
+            var_dump($user->id);
+            var_dump($user->name);
+        }
+
+
+
+        $db = $this->load_db();
+        $this->load_model('user_model');
+        $users = $this->user_model->all();
+        foreach ($users as $user) {
+            var_dump($user->id);
+            var_dump($user->name);
+        }
+
+
+        $db = $this->load_db('dev');
+        $this->load_model('user_model');
+        $users = $this->user_model->all();
+        foreach ($users as $user) {
+            var_dump($user->id);
+            var_dump($user->name);
+        }
+
+        $db = $this->load_db('dev');
+        var_dump($this->class_loaded());
+
+
     }
 
 }

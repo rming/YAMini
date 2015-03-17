@@ -1,5 +1,6 @@
 {
     "require":{
+        "illuminate/database": "*"
     },
     "autoload": {
         "psr-4": {
