@@ -1,5 +1,8 @@
 
 <img src="http://ww4.sinaimg.cn/large/005wzwuKgw1eq6ofm37yfj30lo08iwep.jpg">
+
+[TOC]
+
 ###Description
 
 Yet another mini PHP framework.
@@ -167,7 +170,50 @@ http://yourdomain.com/home/halo
 
 ####模型创建
 
-@todo ORM 或者 PDO
+传说中`Laravel`使用的`Eloquent ORM` 很赞，所以这里我们也尝试使用它。
+
+测试代码参考: `controller\Home::halo()`
+
+`Eloquent ORM` 使用方法可以参考 [Laravel 文档](http://laravel-china.org/docs/5.0/eloquent)
+
+连接数据库：
+
+
+    /*
+     *config/database.php
+     *
+     */
+    //使用 default 配置连接数据库
+    $this->load_db();
+    $this->load_db('default');
+
+    //使用 dev 配置连接数据库
+    $this->load_db('dev');
+
+    //当然你也可以这样
+    //查询 master 配置中数据库的 users
+    $this->load_db('master');
+    $this->load_model('user_model');
+    $users = $this->user_model->all();
+    foreach ($users as $user) {
+        var_dump($user->id);
+        var_dump($user->name);
+    }
+
+    //查询 slave 配置中数据库的 users
+    $this->load_db('slave');
+    $this->load_model('user_model');
+    $users = $this->user_model->all();
+    foreach ($users as $user) {
+        var_dump($user->id);
+        var_dump($user->name);
+    }
+
+
+####配置文件加载
+
+代码见：`loader::config($filename)`
+直接读取 config 目录下地该 `$filename` 的配置返回，参考`config/database.php`
 
 ####常见代码
 
@@ -210,9 +256,12 @@ http://yourdomain.com/home/halo
     //默认参数
     地址重写前 ，args 默认从第三段 uri 开始，重写后，从匹配项后 开始。
 
+    //url 生成
+    $this->url('home/page1');
 
+    //连接数据库
+    $this->load_db('master');
+    //数据查询
+    $this->load_model('user_model');
+    $users = $this->user_model->all();
 
-##TODO
-- 文档 `loader::config()`, ORM 文档
-- loader::load() 实例化 composer 类的测试，文档
-- trait url

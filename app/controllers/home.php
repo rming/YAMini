@@ -86,8 +86,17 @@ class Home extends controller
 
         $db = $this->load_db('dev');
         var_dump($this->class_loaded());
-
-
     }
 
+    public function page1()
+    {
+        $link = $this->url('home/page2');
+        echo '<a href="'.$link.'">page2</a>';
+    }
+
+    public function page2()
+    {
+        $link = $this->url('home/page1');
+        echo '<a href="'.$link.'">page1</a>';
+    }
 }
