@@ -113,11 +113,11 @@ trait loader
      * @param  static::$property $register       私有属性，类的注册表
      * @param  String            $class          类名
      * @param  String            $instance_name  注册名
-     * @param  Array             $config         实例化配置参数数组
+     * @param  Array|String      $config         实例化配置参数
      *
      * @return Object|flase      $class_instance 实例化对象
      */
-    private static function factory(&$register = null, $class = null, $instance_name = null, $config = [])
+    private static function factory(&$register = null, $class = null, $instance_name = null, $config = null)
     {
         if($config) {
             $class_instance = new $class($config);
@@ -135,6 +135,7 @@ trait loader
      * @param  null|String|Array $files   文件名(列表)
      * @param  String            $_prefix 文件路径前缀
      * @param  String            $_ext    文件扩展名
+     *
      * @return Array             $files   文件路径列表
      */
     private static function files_path($_files = null, $_prefix = '', $_ext = '')

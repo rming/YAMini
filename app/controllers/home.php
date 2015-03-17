@@ -55,7 +55,7 @@ class Home extends controller
 
     }
 
-    public function hello()
+    public function halo()
     {
         $db = $this->load_db('default');
         $this->load_model('user_model');
