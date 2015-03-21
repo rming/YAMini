@@ -26,4 +26,9 @@ class Controller
         }
     }
 
+    public function __clone()
+    {
+        throw new \Exception("Clone Is Not Allowed", 500);
+    }
+
 }
