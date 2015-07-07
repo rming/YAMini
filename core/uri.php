@@ -50,7 +50,7 @@ trait uri
     }
     public static function url($uri = '')
     {
-        $protocol = $_SERVER['HTTPS'] ==='off' ? 'http://' : 'https://';
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ==='on' ? 'https://' : 'http://';
         $url = rtrim($_SERVER['HTTP_HOST'].DIRECTORY_SEPARATOR.$uri,REWRITE_EXT).REWRITE_EXT;
 
         return $protocol.preg_replace('/(\/)+/i', '/', $url);
