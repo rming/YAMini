@@ -48,10 +48,16 @@ trait uri
 
         return $params_assoc;
     }
+
     public static function url($uri = '')
     {
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ==='on' ? 'https://' : 'http://';
-        $url = rtrim($_SERVER['HTTP_HOST'].DIRECTORY_SEPARATOR.$uri,REWRITE_EXT).REWRITE_EXT;
+        $url = $_SERVER['HTTP_HOST'].'/'.$uri;
+        $reg = '/^(.*)'.preg_quote(static::$_rewrite_ext).'$/i';
+        $url = preg_replace($reg, '${1}', $url).static::$_rewrite_ext;
+
+        $url = ($uri=='/') ? $_SERVER['HTTP_HOST'].'/'.$uri : $url;
+        $url = ($uri=='') ? $_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING'] : $url;;
 
         return $protocol.preg_replace('/(\/)+/i', '/', $url);
     }
